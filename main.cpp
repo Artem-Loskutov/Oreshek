@@ -2,6 +2,6 @@
 
 int main()
 {
-    Game game(800, 600, "TheGame");
+    Game game(500, 500, "TheGame");
     game.run();
 }

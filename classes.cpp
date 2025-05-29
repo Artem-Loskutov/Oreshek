@@ -4,7 +4,13 @@
 #include <sstream>
 #include <iomanip>
 
-Game::Game(unsigned int window_lengh, unsigned int window_height, std::string window_name) :
+sf::Texture load_texture(const std::string& path)
+{
+    sf::Texture texture(path);
+    return texture;
+}
+
+Game::Game(unsigned int window_lengh, unsigned int window_height, const std::string& window_name) :
     current_game_hour(0), seconds_per_hour(1.0f)
 {
     window.create(sf::VideoMode(sf::Vector2u{ window_lengh, window_height }), window_name);
@@ -26,6 +32,8 @@ void Game::run()
     
     sf::Clock clock;
 
+    textures_list["island"] = std::move(load_texture("island.png"));
+    
     while (window.isOpen())
     {
         event_reactions();
@@ -58,16 +66,20 @@ void Game::event_reactions()
 
 void Game::draw(sf::Clock& clock, sf::Text& clock_text)
 {
+    window.clear();
+
+    sf::Sprite sprite(textures_list["island"]);
+    window.draw(sprite);
+
     if (clock.getElapsedTime().asSeconds() >= seconds_per_hour)
     {
         clock.restart();
         current_game_hour = (current_game_hour + 1) % 24;
     }
-
     std::ostringstream oss;
     oss << std::setw(2) << std::setfill('0') << current_game_hour << ":00";
     clock_text.setString(oss.str());
-    window.clear();
     window.draw(clock_text);
+
     window.display();
 }
