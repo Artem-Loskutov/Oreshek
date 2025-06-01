@@ -26,6 +26,7 @@ private:
     sf::Font font;
     sf::Clock clock;
     sf::Text clock_text {font};
+    sf::Text score_text{ font };
 
     // unique vars
     int game_hour, game_day, game_month, game_year;
@@ -34,11 +35,15 @@ private:
     const std::vector<int> days_in_month = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     std::vector<Cell> cells;
     int cell_size = 50;
-    std::vector<Weapon> weapons = { {0, "empty", 1000}, {1, "artillery", 3}, {2, "sniper", 2}};
+    std::vector<Weapon> weapons = { {0, "empty", 1000}, {1, "artillery", 3}, {2, "sniper", 6}, {3, "antitank", 3}, {4, "minomet", 4} };
+    int intensivnost = 20;
+    int score = 0;
 
     std::vector<sf::Vector2f> cell_coords = { {147.f, 343.f}, { 85.f, 488.f }, { 369.f, 462.f },
-        { 540.f, 353.f }, { 474.f, 122.f }, { 300.f, 198.f }, { 151.f, 474.f }, { 222.f, 464.f }, { 294.f, 457.f } };
-    //remove to json when i have time 
+        { 540.f, 353.f }, { 474.f, 122.f }, { 300.f, 198.f }, { 151.f, 474.f }, { 222.f, 464.f }, { 294.f, 457.f },
+    { 179.f, 400.f }, { 244.f, 343.f }, { 295.f, 302.f }, { 250.f, 401.f }, 
+    { 420.f, 422.f }, { 483.f, 380.f }, { 307.f, 388.f }, { 364.f, 376.f }, { 422.f, 345.f } };
+    //remove to json when i have time                
 
     std::unordered_map<std::string, sf::Texture> textures_list;
 

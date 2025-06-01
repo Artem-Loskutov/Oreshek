@@ -4,6 +4,8 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 sf::Texture load_texture(const std::string& path)
 {
@@ -13,7 +15,7 @@ sf::Texture load_texture(const std::string& path)
 
 Game::Game(unsigned int window_width, unsigned int window_height, const std::string& window_name) :
     game_hour(0), game_day(9), game_month(9), game_year(1941),
-    seconds_per_hour(1.0f)
+    seconds_per_hour(4.0f)
 {
     window.create(sf::VideoMode(sf::Vector2u{ window_width, window_height }), window_name);
     window.setFramerateLimit(60);
@@ -26,6 +28,7 @@ Game::Game(unsigned int window_width, unsigned int window_height, const std::str
     textures_list["island"] = std::move(load_texture("Assets/island.png"));
     textures_list["night"] = std::move(load_texture("Assets/night.png"));
     textures_list["empty"] = std::move(load_texture("Assets/empty.png"));
+    textures_list["end"] = std::move(load_texture("Assets/end.png"));
 
     textures_list["attention"] = std::move(load_texture("Assets/attention.png"));
     textures_list["bomber"] = std::move(load_texture("Assets/bomber.png"));
@@ -33,13 +36,24 @@ Game::Game(unsigned int window_width, unsigned int window_height, const std::str
 
     textures_list["sniper"] = std::move(load_texture("Assets/sniper.png"));
     textures_list["artillery"] = std::move(load_texture("Assets/artillery.png"));
+    textures_list["ammo"] = std::move(load_texture("Assets/ammo.png"));
+    textures_list["antitank"] = std::move(load_texture("Assets/antitank.png"));
+    textures_list["minomet"] = std::move(load_texture("Assets/minomet.png"));
 };
 
 void Game::operation_Iscra()
 {
-    if (game_year == 1943 && game_month == 1 && game_day == 18 && game_hour == 12)
+    if (game_year == 1943 && game_month == 1 && game_day == 18 && game_hour == 5)
     {
-        std::cout << "Bastion survived. Congratilation!";
+        sf::Sprite sprite(textures_list["end"]);
+        sprite.setColor(sf::Color(255,255,255,128));
+        window.draw(sprite);
+        window.display();
+        std::this_thread::sleep_for(std::chrono::nanoseconds(500000000));
+        sprite.setColor(sf::Color(255, 255, 255, 255));
+        window.draw(sprite);
+        window.display();
+        std::this_thread::sleep_for(std::chrono::nanoseconds(3500000000));
         window.close();
     }
 }
@@ -66,8 +80,8 @@ void Game::run()
     {
         date_maker();
         event_reactions();
-        draw();
         operation_Iscra();
+        draw();
     }
 }
 
@@ -140,6 +154,8 @@ void Game::event_reactions()
             switch (mouse_pressed->button)
             {
             case (sf::Mouse::Button::Right):
+                /*std::cout << mouse_pressed->position.x << " " << mouse_pressed->position.y;
+                create_cell({ static_cast<float>(mouse_pressed->position.x), static_cast<float>(mouse_pressed->position.y) }); */
                 for (auto& cell : cells)
                 {
                     int x = cell.coord.x - 25.f;
@@ -168,8 +184,6 @@ void Game::event_reactions()
                     }
                 }
                 break;
-                /*std::cout << mouse_pressed->position.x << " " << mouse_pressed->position.y;
-                create_cell({ static_cast<float>(mouse_pressed->position.x), static_cast<float>(mouse_pressed->position.y) });*/
             case (sf::Mouse::Button::Left):
                 for (auto& cell : cells)
                 {
@@ -212,7 +226,7 @@ void Game::fire()
     {
         for (auto& cell : cells)
         {
-            if (cell.weapon->name == "artillery")
+            if (cell.weapon->name == "artillery" || cell.weapon->name == "minomet" || cell.weapon->name == "antitank")
             {
                 sf::Sprite sprite3(textures_list["explosion"]);
                 sprite3.setPosition(cell.coord);
@@ -236,62 +250,97 @@ void Game::fire()
 
 void Game::bombing()
 {
-    if (game_hour == 6 || game_hour == 15 || game_hour == 18)
+    if (game_hour == 8 || game_hour == 20 || game_hour == 17)
     {
-        sf::Sprite sprite(textures_list["attention"]);
-        sprite.setPosition({ 10.f,10.f });
-        sprite.setColor(sf::Color(255, 255, 255, 128));
-        window.draw(sprite);
-    }
-    else if (game_hour == 7 || game_hour == 19)
-    {
-        sf::Sprite sprite(textures_list["attention"]);
-        sprite.setPosition({ 10.f,10.f });
-        window.draw(sprite);
-
-        sf::Sprite sprite2(textures_list["artillery"]);
-        sprite2.setPosition({ 65.f,10.f });
-        window.draw(sprite2);
-
-        sf::Sprite sprite3(textures_list["explosion"]);
-        sf::Vector2f boom = cell_coords[rand() % cells.size()];
-        boom -= {25.f, 25.f};
-        sprite3.setPosition(boom);
-        for (auto& cell : cells)
+        if (game_year == 1941)
         {
-            if (cell.coord == boom && cell.weapon->name != "empty")
+            intensivnost = 20;
+        }
+        if (game_year == 1942)
+        {
+            intensivnost = 30;
+        }
+        if (game_year == 1942 && game_month >= 9)
+        {
+            intensivnost = 10;
+        }
+        if (game_year == 1943)
+        {
+            intensivnost = 5;
+        }
+        if (game_year == 1943 && game_day >=10)
+        {
+            intensivnost = 0;
+        }
+    }
+
+    if (intensivnost > 0)
+    {
+        if (game_hour == 6 || game_hour == 15 || game_hour == 18)
+        {
+            sf::Sprite sprite(textures_list["attention"]);
+            sprite.setPosition({ 10.f,10.f });
+            sprite.setColor(sf::Color(255, 255, 255, 128));
+            window.draw(sprite);
+        }
+        else if (game_hour == 7 || game_hour == 19)
+        {
+            sf::Sprite sprite(textures_list["attention"]);
+            sprite.setPosition({ 10.f,10.f });
+            window.draw(sprite);
+
+            sf::Sprite sprite2(textures_list["artillery"]);
+            sprite2.setPosition({ 65.f,10.f });
+            window.draw(sprite2);
+
+            for (int i = 0; i < intensivnost; intensivnost--)
             {
-                weapons[cell.weapon->index].total--;
-                cell.weapon = &weapons[0];
-                cell.cell_texture = textures_list[cell.weapon->name];
+                sf::Sprite sprite3(textures_list["explosion"]);
+                sf::Vector2f boom = cell_coords[rand() % cells.size()];
+                sf::Vector2f boom2 = boom;
+                boom -= {25.f, 25.f};
+                sprite3.setPosition(boom);
+                for (auto& cell : cells)
+                {
+                    if (cell.coord == boom2 && cell.weapon->name != "empty")
+                    {
+                        weapons[cell.weapon->index].total--;
+                        cell.weapon = &weapons[0];
+                        cell.cell_texture = textures_list[cell.weapon->name];
+                    }
+                }
+                window.draw(sprite3);
             }
         }
-        window.draw(sprite3);
-    }
-    else if (game_hour == 16)
-    {
-        sf::Sprite sprite(textures_list["attention"]);
-        sprite.setPosition({ 10.f,10.f });
-        window.draw(sprite);
-
-        sf::Sprite sprite2(textures_list["bomber"]);
-        sprite2.setPosition({ 65.f,10.f });
-        window.draw(sprite2);
-
-        sf::Sprite sprite3(textures_list["explosion"]);
-        sf::Vector2f boom = cell_coords[rand() % cells.size()];
-        boom -= {25.f, 25.f};
-        sprite3.setPosition(boom);
-        for (auto& cell : cells)
+        else if (game_hour == 16)
         {
-            if (cell.coord == boom && cell.weapon->name != "empty")
+            sf::Sprite sprite(textures_list["attention"]);
+            sprite.setPosition({ 10.f,10.f });
+            window.draw(sprite);
+
+            sf::Sprite sprite2(textures_list["bomber"]);
+            sprite2.setPosition({ 65.f,10.f });
+            window.draw(sprite2);
+
+            for (int i = 0; i < intensivnost; intensivnost--)
             {
-                weapons[cell.weapon->index].total--;
-                cell.weapon = &weapons[0];
-                cell.cell_texture = textures_list[cell.weapon->name];
+                sf::Sprite sprite3(textures_list["explosion"]);
+                sf::Vector2f boom = cell_coords[rand() % cells.size()];
+                sf::Vector2f boom2 = boom;
+                boom -= {25.f, 25.f};
+                sprite3.setPosition(boom);
+                for (auto& cell : cells)
+                {
+                    if (cell.coord == boom2 && cell.weapon->name != "empty")
+                    {
+                        weapons[cell.weapon->index].total--;
+                        cell.weapon = &weapons[0];
+                        cell.cell_texture = textures_list[cell.weapon->name];
+                    }
+                }
+                window.draw(sprite3);
             }
         }
-        window.draw(sprite3);
     }
 }
 
@@ -319,6 +368,11 @@ void Game::draw()
         window.draw(cell_sprite);
     }
 
+    sf::Sprite cell_sprite2(textures_list["ammo"]);
+    auto mid = cell_sprite2.getLocalBounds().getCenter();
+    cell_sprite2.setPosition({ sf::Vector2f{ 448.f, 220.f } - mid });
+    window.draw(cell_sprite2);
+
     bombing();
     fire();
 
@@ -344,6 +398,7 @@ void Game::draw()
     window.draw(night_sprite);
 
     window.draw(clock_text);
+    operation_Iscra();
 
     window.display();
 }
